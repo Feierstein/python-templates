@@ -1,0 +1,58 @@
+Table of Machine Learning Models with Key Hyperparameters,,
+,,
+Model,Key Hyperparameters,Hyperparameter Description & Evaluation Metrics
+Linear Regression,"fit_intercept, normalize, copy_X",- fit_intercept: Whether to calculate the intercept.
+,,- normalize: Whether to normalize the features before fitting the model.
+,,"Evaluation: R_ score (coefficient of determination), Mean Squared Error (MSE), or Mean Absolute Error (MAE)."
+Logistic Regression,"C, penalty, solver, max_iter",- C: Regularization strength (inverse).
+,,"- penalty: Regularization type ('l1', 'l2')."
+,,"- solver: Optimization algorithm ('liblinear', 'lbfgs', etc.)."
+,,- max_iter: Maximum number of iterations for solver.
+,,"Evaluation: Accuracy, Precision, Recall, F1-score, ROC AUC."
+Ridge Regression,"alpha, fit_intercept, normalize, solver",- alpha: Regularization strength.
+,,- fit_intercept: Whether to fit the intercept.
+,,"- solver: Optimization algorithm ('auto', 'svd', 'cholesky', etc.)."
+,,"Evaluation: R_ score, Mean Squared Error (MSE)."
+Lasso Regression,"alpha, fit_intercept, max_iter, selection",- alpha: Regularization strength.
+,,"- selection: Feature selection strategy ('cyclic', 'random')."
+,,"Evaluation: R_ score, Mean Squared Error (MSE), Mean Absolute Error (MAE)."
+ElasticNet,"alpha, l1_ratio, fit_intercept, max_iter",- alpha: Regularization strength.
+,,"- l1_ratio: Balance between Lasso and Ridge (0 = Ridge, 1 = Lasso)."
+,,"Evaluation: R_ score, Mean Squared Error (MSE), Mean Absolute Error (MAE)."
+Decision Tree Classifier,"max_depth, min_samples_split, min_samples_leaf, max_features",- max_depth: Maximum depth of the tree.
+,,- min_samples_split: Minimum number of samples required to split a node.
+,,- min_samples_leaf: Minimum number of samples required to be at a leaf node.
+,,"Evaluation: Accuracy, Precision, Recall, F1-score, ROC AUC, Confusion Matrix."
+Random Forest Classifier,"n_estimators, max_depth, min_samples_split, min_samples_leaf, max_features",- n_estimators: Number of trees in the forest.
+,,- max_depth: Maximum depth of each tree.
+,,- min_samples_split: Minimum number of samples required to split a node.
+,,"Evaluation: Accuracy, Precision, Recall, F1-score, ROC AUC, Confusion Matrix."
+Gradient Boosting Classifier,"n_estimators, learning_rate, max_depth, min_samples_split, subsample",- n_estimators: Number of boosting stages.
+,,- learning_rate: Shrinks the contribution of each tree.
+,,- max_depth: Maximum depth of individual trees.
+,,"Evaluation: Accuracy, Precision, Recall, F1-score, ROC AUC, Confusion Matrix."
+AdaBoost Classifier,"n_estimators, learning_rate",- n_estimators: Number of weak learners (trees) to fit.
+,,- learning_rate: Weight of weak learners.
+,,"Evaluation: Accuracy, Precision, Recall, F1-score, ROC AUC, Confusion Matrix."
+Support Vector Classifier (SVC),"C, kernel, gamma, degree, coef0",- C: Regularization parameter.
+,,"- kernel: Kernel type ('linear', 'rbf', 'poly', 'sigmoid')."
+,,"- gamma: Kernel coefficient for 'rbf', 'poly', 'sigmoid'."
+,,"Evaluation: Accuracy, Precision, Recall, F1-score, ROC AUC, Confusion Matrix."
+K-Nearest Neighbors (KNN),"n_neighbors, weights, algorithm, p",- n_neighbors: Number of neighbors to consider.
+,,"- weights: Weight function used in prediction ('uniform', 'distance')."
+,,"- algorithm: Algorithm used to compute nearest neighbors ('auto', 'ball_tree', 'kd_tree', 'brute')."
+,,"Evaluation: Accuracy, Precision, Recall, F1-score, ROC AUC, Confusion Matrix."
+Gaussian Naive Bayes,var_smoothing,- var_smoothing: Portion of the largest variance added to variances for stability.
+,,"Evaluation: Accuracy, Precision, Recall, F1-score, ROC AUC, Confusion Matrix."
+K-Means Clustering,"n_clusters, init, max_iter, n_init",- n_clusters: Number of clusters.
+,,"- init: Method for initializing centroids ('k-means++', 'random')."
+,,- max_iter: Maximum number of iterations for a single run.
+,,"Evaluation: Silhouette Score, Davies-Bouldin Index, Inertia."
+DBSCAN,"eps, min_samples, metric",- eps: Maximum distance between two samples for them to be considered neighbors.
+,,- min_samples: Minimum number of samples in a neighborhood to form a core point.
+,,"Evaluation: Silhouette Score, Davies-Bouldin Index, Adjusted Rand Index (ARI)."
+MLP Classifier,"hidden_layer_sizes, activation, solver, alpha, learning_rate",- hidden_layer_sizes: Number of neurons in each hidden layer.
+,,"- activation: Activation function ('relu', 'logistic')."
+,,"- solver: Optimization algorithm ('adam', 'sgd', 'lbfgs')."
+,,- alpha: Regularization term.
+,,"Evaluation: Accuracy, Precision, Recall, F1-score, ROC AUC, Confusion Matrix."

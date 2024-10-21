@@ -1,0 +1,150 @@
+To include the transformation of the data during inference, you need to ensure that the same data transformation logic (e.g., scaling, encoding) that was applied during training is also applied to the incoming data at inference time. This can be done by:
+
+Saving the transformation object (e.g., StandardScaler) when training the model.
+Loading the transformation object during inference.
+Applying the transformation to the new data before sending it to the model for prediction.
+In SageMaker, you can achieve this by creating a custom inference script (also known as a model entry point script). The custom script will:
+
+Load the trained model.
+Load the saved transformation object (like the StandardScaler).
+Apply the transformation to the incoming data before making predictions.
+Steps:
+Save the Transformation Object: As shown in the previous steps, save the transformation object (e.g., a StandardScaler or other transformer) to a file (using joblib or pickle) during model training.
+
+Example:
+
+python
+Copy code
+import joblib
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+joblib.dump(scaler, "scaler.pkl")
+Upload this scaler.pkl to S3 along with your model so it can be used during inference.
+
+Custom Inference Script: You need to modify the inference script to load the scaler.pkl file and apply the transformation before sending data to the model. The custom script is implemented when deploying the model to SageMaker.
+
+Custom Inference Script (inference.py)
+Here’s an example of a custom inference script that loads both the model and the transformation object (like StandardScaler), applies the transformation, and makes predictions:
+
+python
+Copy code
+import os
+import joblib
+import numpy as np
+import xgboost as xgb
+
+# Called when the model is loaded in the container
+def model_fn(model_dir):
+    # Load the trained XGBoost model
+    model = xgb.Booster()
+    model.load_model(os.path.join(model_dir, 'xgboost-model.json'))
+    
+    # Load the saved scaler (transformation object)
+    scaler = joblib.load(os.path.join(model_dir, 'scaler.pkl'))
+    
+    return model, scaler
+
+# Called for inference
+def input_fn(request_body, content_type):
+    if content_type == 'text/csv':
+        # Convert the input CSV data to numpy array
+        data = np.fromstring(request_body, sep=',').reshape(1, -1)
+        return data
+    else:
+        raise ValueError(f"Unsupported content type: {content_type}")
+
+# Apply the transformation and make predictions
+def predict_fn(input_data, model_and_scaler):
+    model, scaler = model_and_scaler
+    
+    # Apply the saved transformation (scaling) to the input data
+    transformed_data = scaler.transform(input_data)
+    
+    # Create DMatrix for XGBoost (required for prediction)
+    dmatrix = xgb.DMatrix(transformed_data)
+    
+    # Make predictions
+    prediction = model.predict(dmatrix)
+    
+    return prediction
+
+# Format the output
+def output_fn(prediction, content_type):
+    if content_type == 'text/csv':
+        return ','.join(str(x) for x in prediction.tolist())
+    else:
+        raise ValueError(f"Unsupported content type: {content_type}")
+Steps in the Inference Script:
+model_fn(): Loads both the model and the transformation object (e.g., scaler.pkl) when the model is loaded.
+input_fn(): Takes the incoming data (CSV format), converts it to a NumPy array for processing.
+predict_fn(): Applies the saved transformation (e.g., scaling) to the input data, then makes predictions using the model.
+output_fn(): Formats the output as CSV (or other formats if required).
+Deployment Process
+Bundle the Custom Inference Script with the Model:
+
+You need to create a tarball (model.tar.gz) that includes:
+The trained XGBoost model (e.g., xgboost-model.json)
+The saved transformation object (e.g., scaler.pkl)
+The custom inference script (inference.py)
+Here’s how you can create this tarball:
+
+bash
+Copy code
+tar -cvpzf model.tar.gz xgboost-model.json scaler.pkl inference.py
+Upload the Model to S3:
+
+Upload the model.tar.gz file to your S3 bucket.
+Deploy the Model to SageMaker:
+
+When deploying the model, specify the model.tar.gz path and configure the endpoint to use the custom inference script.
+python
+Copy code
+from sagemaker.model import Model
+
+# Specify the model artifact and custom script
+model_artifact = f"s3://{bucket}/xgboost-model/model.tar.gz"
+
+# Deploy the model
+model = Model(
+    model_data=model_artifact,
+    role=role,
+    entry_point='inference.py',
+    framework_version='1.5-1',  # Match the XGBoost framework version
+    image_uri=container
+)
+
+predictor = model.deploy(
+    initial_instance_count=1,
+    instance_type='ml.m5.large',
+    endpoint_name='xgboost-boston-endpoint'
+)
+Invoking the Endpoint
+Once the model is deployed with the custom inference script, you can invoke the endpoint the same way as before, but now the data will be transformed before predictions.
+
+python
+Copy code
+import boto3
+import numpy as np
+
+# Endpoint name
+endpoint_name = "xgboost-boston-endpoint"
+
+# Input data (must match the format expected before scaling)
+input_data = np.array([0.00632, 18.0, 2.31, 0.0, 0.538, 6.575, 65.2, 4.0900, 1.0, 296.0, 15.3, 396.90, 4.98]).reshape(1, -1)
+csv_data = ",".join(map(str, input_data.flatten()))
+
+# Create a SageMaker runtime client
+client = boto3.client('sagemaker-runtime')
+
+# Invoke the endpoint
+response = client.invoke_endpoint(
+    EndpointName=endpoint_name,
+    Body=csv_data,
+    ContentType='text/csv'
+)
+
+# Output prediction
+result = response['Body'].read().decode('utf-8')
+print("Prediction:", result)
+Conclusion:
+By using a custom inference script (inference.py) that loads the transformation object and applies it before making predictions, you ensure that the same preprocessing steps are applied to incoming data during inference. This maintains consistency between the model's training and inference processes.
